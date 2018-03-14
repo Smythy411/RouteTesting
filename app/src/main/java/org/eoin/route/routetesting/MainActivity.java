@@ -8,14 +8,15 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,34 +44,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        new HttpRequestTask().execute();
         new HttpGraphRequestTask().execute();
-    }
-
-    private class HttpRequestTask extends AsyncTask<Void, Void, OSMNode> {
-        @Override
-        protected OSMNode doInBackground(Void... params) {
-            try {
-
-                final String url2 = "http://46.101.77.71:8080/gs-rest-service-initial/OSMNode";
-                RestTemplate restTemplate2 = new RestTemplate();
-                restTemplate2.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-                OSMNode node = restTemplate2.getForObject(url2, OSMNode.class);
-
-                return node;
-            } catch (Exception e) {
-                Log.e("MainActivity", e.getMessage(), e);
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(OSMNode node) {
-            TextView nodeIdText = (TextView) findViewById(R.id.node_value);
-
-            nodeIdText.setText(Long.toString(node.getNodeID()));
-        }
     }
 
     private class HttpGraphRequestTask extends AsyncTask<Void, Void, OSMEdge[]> {
@@ -96,8 +70,42 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(OSMEdge[] edges) {
             for (int i = 0; i < edges.length; i++) {
-                Log.i("Egde " + i + ": ", edges[i].toString());
+                Log.i("Edge " + i + ": ", edges[i].toString());
             }
+
+            OSMNode source = edges[0].getSourceNode();
+            OSMNode target = edges[0].getTargetNode();
+
+            GeoPoint startPoint = new GeoPoint(Double.parseDouble(source.getLat()),
+                    Double.parseDouble(target.getLon()));
+
+            TextView nodeIdText = (TextView) findViewById(R.id.node_value);
+            nodeIdText.setText(Long.toString(source.getNodeID()));
+
+            //Sets the inital zoom level and starting location
+            IMapController mapController = map.getController();
+            mapController.setZoom(17);
+            mapController.setCenter(startPoint);
+
+            //Simple marker for the starting node of the route
+            Marker startMarker = new Marker(map);
+            startMarker.setPosition(startPoint);
+            startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            map.getOverlays().add(startMarker);
+            startMarker.setTitle("Start point");
         }
     }
+
+    public void onResume(){
+        super.onResume();
+        //this will refresh the osmdroid configuration on resuming.
+        //if you make changes to the configuration, use
+        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        //Configuration.getInstance().save(this, prefs);
+        Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
+    }//End onResume()
+
+    protected void onStop() {
+        super.onStop();
+    }//End onStop()
 }
