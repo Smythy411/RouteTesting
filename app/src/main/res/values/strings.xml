@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">RouteTesting</string>
+
+    <string name="node_label">The nodeID is</string>
+    <string name="node_value">[nodeID]</string>
+    <string name="lat_label">Latitude: </string>
+    <string name="lon_label">Longitude: </string>
+    <string name="lat_value">[latitude]</string>
+    <string name="lon_value">[longitude]</string>
+</resources>
