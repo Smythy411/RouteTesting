@@ -1,9 +1,18 @@
 package org.eoin.route.routetesting;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +33,8 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -32,8 +43,11 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+
     //Map view
     MapView map;
+    private MyLocationNewOverlay mLocationOverlay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,10 +66,21 @@ public class MainActivity extends AppCompatActivity {
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
 
+        GpsMyLocationProvider provider = new GpsMyLocationProvider(ctx);
+        provider.addLocationSource(LocationManager.NETWORK_PROVIDER);
+        Location l = provider.getLastKnownLocation();
+        provider.onLocationChanged(l);
+        this.mLocationOverlay = new MyLocationNewOverlay(provider, map);
+        this.mLocationOverlay.enableMyLocation();
+        map.getOverlays().add(this.mLocationOverlay);
+        GeoPoint initialLocation = this.mLocationOverlay.getMyLocation();
+
+        System.out.println(initialLocation + " / " + this.mLocationOverlay.isMyLocationEnabled() + " / " + l);
+
         //Sets the inital zoom level and starting location
         IMapController mapController = map.getController();
         mapController.setZoom(17);
-        mapController.setCenter(new GeoPoint(53.3498, -6.2603));
+        mapController.setCenter(initialLocation);
     }
 
     @Override
@@ -75,7 +100,13 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_refresh) {
             map.getOverlays().clear();
             map.invalidate();
-            new HttpGraphRequestTask().execute();
+            new HttpGraphRequestTask().execute("GetGraph");
+            return true;
+        }
+        if (id == R.id.action_simpleLoop) {
+            map.getOverlays().clear();
+            map.invalidate();
+            new HttpGraphRequestTask().execute("GetSimpleGraph");
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -83,16 +114,57 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
+        // check if enabled and if not send user to the GPS settings
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                //if (!enabled) {
+                //Simple AlertBox to ask the user to enable their location.
+                final AlertDialog.Builder enableLocation = new AlertDialog.Builder(MainActivity.this);
+                enableLocation.setTitle("This application requires permission to access your location." +
+                        "Would you like to enable your location?");
+
+                //If user wishes to continue with their action
+                enableLocation.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        //Prompt the user once explanation has been shown
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                MY_PERMISSIONS_REQUEST_LOCATION);
+                    }//End onClick
+                });// End Positive Button
+                //If user does not wish to continue with their action
+                enableLocation.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        setResult(Activity.RESULT_CANCELED);
+                    }//End onClick
+                });//End Negative Button
+                enableLocation.show();
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+            }
+        }
         super.onStart();
-        new HttpGraphRequestTask().execute();
+        new HttpGraphRequestTask().execute("GetGraph");
     }
 
-    private class HttpGraphRequestTask extends AsyncTask<Void, Void, OSMEdge[]> {
+    private class HttpGraphRequestTask extends AsyncTask<String, Void, OSMEdge[]> {
         @Override
-        protected OSMEdge[] doInBackground(Void... params) {
+        protected OSMEdge[] doInBackground(String... endpoint) {
             try {
 
-                final String url = "http://46.101.77.71:8080/gs-rest-service-initial/GetGraph";
+                final String url = "http://46.101.77.71:8080/gs-rest-service-initial/" + endpoint[0];
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
                 ResponseEntity<OSMEdge[]> responseEntity = restTemplate.getForEntity(url, OSMEdge[].class);
@@ -194,9 +266,15 @@ public class MainActivity extends AppCompatActivity {
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //Configuration.getInstance().save(this, prefs);
         Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
+        map.onResume();
     }//End onResume()
 
     protected void onStop() {
         super.onStop();
+        //this will refresh the osmdroid configuration on resuming.
+        //if you make changes to the configuration, use
+        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        //Configuration.getInstance().save(this, prefs);
+        map.onPause();  //needed for compass, my location overlays, v6.0.0 and up
     }//End onStop()
 }

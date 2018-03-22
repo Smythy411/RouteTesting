@@ -2,6 +2,7 @@
     <string name="app_name">RouteTesting</string>
 
     <string name="action_refresh">Refresh</string>
+    <string name="action_simpleLoop">Simple Loop</string>
 
     <string name="node_label">The nodeID is</string>
     <string name="node_value">[nodeID]</string>
