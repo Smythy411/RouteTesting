@@ -14,6 +14,8 @@ public class OSMEdge{
 
     @JsonIgnoreProperties("edges")
     OSMNode sourceNode, targetNode;
+    boolean visited;
+    Double distance = null;
 
 	/*
 	 * 		CONSTRUCTORS
@@ -25,11 +27,13 @@ public class OSMEdge{
 
     public OSMEdge(long wID) {
         this.wayID = wID;
+        this.visited = false;
     }//End constructor
 
     public OSMEdge(long eID, long wID) {
         this.edgeID = eID;
         this.wayID = wID;
+        this.visited = false;
     }//End constructor
 
     public OSMEdge(OSMNode source, OSMNode target) {
@@ -41,12 +45,16 @@ public class OSMEdge{
 		*/
         this.sourceNode = source;
         this.targetNode = target;
+        this.visited = false;
+        this.distance = calculateDistance(source, target);
     }//End constructor
 
     public OSMEdge(long wID, OSMNode source, OSMNode target) {
         this.wayID = wID;
         this.sourceNode = source;
         this.targetNode = target;
+        this.visited = false;
+        this.distance = calculateDistance(source, target);
     }//End constructor
 
     public OSMEdge(long eID, long wID, OSMNode source, OSMNode target) {
@@ -54,6 +62,8 @@ public class OSMEdge{
         this.wayID = wID;
         this.sourceNode = source;
         this.targetNode = target;
+        this.visited = false;
+        this.distance = calculateDistance(source, target);
     }//End constructor
 
 	/*
@@ -92,6 +102,32 @@ public class OSMEdge{
         this.targetNode = target;
     }//End setTargetNode()
 
+    public OSMNode getNeighbour(OSMNode v) {
+        if (v == this.sourceNode ) {
+            return this.targetNode;
+        } else if (v == this.targetNode){
+            return this.sourceNode;
+        } else {
+            return null;
+        }//End if else
+    }//End getNeighbour
+
+    public void setVisited() {
+        this.visited = true;
+    }//End setVisited()
+
+    public boolean getVisited() {
+        return this.visited;
+    }//End getVisited()
+
+    public Double calculateDistance(OSMNode source, OSMNode target) {
+        return Haversine.distance(Double.parseDouble(source.getLat()), Double.parseDouble(source.getLon()),
+                Double.parseDouble(target.getLat()), Double.parseDouble(target.getLon()));
+    }//End clalculateDistance()
+
+    public Double getDistance() {
+        return this.distance;
+    }//End getDistance()
     @Override
     public String toString()
     {
