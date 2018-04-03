@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Map view
     MapView map;
+    LocationController lc;
     private MyLocationNewOverlay mLocationOverlay;
 
     @Override
@@ -66,21 +67,14 @@ public class MainActivity extends AppCompatActivity {
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
 
-        GpsMyLocationProvider provider = new GpsMyLocationProvider(ctx);
-        provider.addLocationSource(LocationManager.NETWORK_PROVIDER);
-        Location l = provider.getLastKnownLocation();
-        provider.onLocationChanged(l);
-        this.mLocationOverlay = new MyLocationNewOverlay(provider, map);
-        this.mLocationOverlay.enableMyLocation();
-        map.getOverlays().add(this.mLocationOverlay);
-        GeoPoint initialLocation = this.mLocationOverlay.getMyLocation();
-
-        System.out.println(initialLocation + " / " + this.mLocationOverlay.isMyLocationEnabled() + " / " + l);
+        this.lc = new LocationController(this, ctx, map);
+        lc.setCurrentLocation();
+        lc.addOverlays();
 
         //Sets the inital zoom level and starting location
         IMapController mapController = map.getController();
         mapController.setZoom(17);
-        mapController.setCenter(initialLocation);
+        mapController.setCenter(lc.getCurrentLocation());
     }
 
     @Override
@@ -114,47 +108,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
-        // check if enabled and if not send user to the GPS settings
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-                //if (!enabled) {
-                //Simple AlertBox to ask the user to enable their location.
-                final AlertDialog.Builder enableLocation = new AlertDialog.Builder(MainActivity.this);
-                enableLocation.setTitle("This application requires permission to access your location." +
-                        "Would you like to enable your location?");
-
-                //If user wishes to continue with their action
-                enableLocation.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        //Prompt the user once explanation has been shown
-                        ActivityCompat.requestPermissions(MainActivity.this,
-                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                MY_PERMISSIONS_REQUEST_LOCATION);
-                    }//End onClick
-                });// End Positive Button
-                //If user does not wish to continue with their action
-                enableLocation.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        setResult(Activity.RESULT_CANCELED);
-                    }//End onClick
-                });//End Negative Button
-                enableLocation.show();
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION);
-            }
-        }
+        lc.setCurrentLocation();
         super.onStart();
         new HttpGraphRequestTask().execute("GetGraph");
     }
@@ -164,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
         protected OSMEdge[] doInBackground(String... endpoint) {
             try {
 
-                final String url = "http://46.101.77.71:8080/gs-rest-service-initial/" + endpoint[0];
+                final String url = "http://46.101.77.71:8080/drfr-backend/" + endpoint[0];
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
                 ResponseEntity<OSMEdge[]> responseEntity = restTemplate.getForEntity(url, OSMEdge[].class);
@@ -261,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onResume(){
         super.onResume();
+        lc.setCurrentLocation();
         //this will refresh the osmdroid configuration on resuming.
         //if you make changes to the configuration, use
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
