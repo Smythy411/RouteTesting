@@ -10,4 +10,5 @@
     <string name="lon_label">Longitude: </string>
     <string name="lat_value">[latitude]</string>
     <string name="lon_value">[longitude]</string>
+    <string name="title_activity_map">MapActivity</string>
 </resources>

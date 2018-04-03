@@ -5,7 +5,9 @@ package org.eoin.route.routetesting;
  */
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-public class OSMEdge{
+import java.io.Serializable;
+
+public class OSMEdge implements Serializable{
 
     private static final long serialVersionUID = 1L;
 

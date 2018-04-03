@@ -34,14 +34,14 @@ public class LocationController implements LocationListener {
         this.activity = activity;
         this.context = ctx;
         this.mMapView = m;
-        System.out.println("Creating Location Controller");
+        setCurrentLocation();
     }
 
     public void addOverlays() {
         System.out.println("Adding Overlay");
         myLocation = new Marker(mMapView);
-        myLocation.setIcon(context.getResources().getDrawable(R.drawable.running_man));
-        myLocation.setImage(context.getResources().getDrawable(R.drawable.running_man));
+        myLocation.setIcon(context.getResources().getDrawable(R.drawable.marker_node));
+        myLocation.setImage(context.getResources().getDrawable(R.drawable.marker_node));
         mMapView.getOverlays().add(myLocation);
     }
 
@@ -91,6 +91,8 @@ public class LocationController implements LocationListener {
             Location location = mgr.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if( location != null ) {
                 currentLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
+                Log.i("currentLocation", String.valueOf(currentLocation));
+            } else {
                 Log.i("currentLocation", String.valueOf(currentLocation));
             }
         } catch (Exception ex) {

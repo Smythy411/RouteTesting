@@ -2,11 +2,12 @@ package org.eoin.route.routetesting;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /*OSMNode is a custom vertex class for working with OSM data
  */
-public class OSMNode {
+public class OSMNode implements Serializable {
 
     private int id;
     private long nodeID;
