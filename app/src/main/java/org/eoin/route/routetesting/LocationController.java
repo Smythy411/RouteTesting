@@ -38,10 +38,9 @@ public class LocationController implements LocationListener {
     }
 
     public void addOverlays() {
-        System.out.println("Adding Overlay");
+        mMapView.getOverlays().remove(myLocation);
         myLocation = new Marker(mMapView);
         myLocation.setIcon(context.getResources().getDrawable(R.drawable.marker_node));
-        myLocation.setImage(context.getResources().getDrawable(R.drawable.marker_node));
         mMapView.getOverlays().add(myLocation);
     }
 
@@ -90,7 +89,7 @@ public class LocationController implements LocationListener {
             Location location = mgr.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if( location != null ) {
                 currentLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
-                Log.i("currentLocation", String.valueOf(currentLocation));
+                Log.i("currentLocation1", String.valueOf(currentLocation));
             } else {
                 Log.i("currentLocation", "In the Ivory Coast somewhere I guess: " + String.valueOf(currentLocation));
             }
@@ -128,7 +127,7 @@ public class LocationController implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
         currentLocation = new GeoPoint(location);
-        Log.i("currentLocation", String.valueOf(currentLocation));
+        Log.i("currentLocation2", String.valueOf(currentLocation));
         myLocation.setPosition(new GeoPoint(currentLocation));
         if (!added) {
             mMapView.getOverlayManager().add(myLocation);

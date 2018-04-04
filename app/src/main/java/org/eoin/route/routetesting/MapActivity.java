@@ -67,7 +67,7 @@ public class MapActivity extends AppCompatActivity {
         lc.addOverlays();
 
         //Sets the inital zoom level and starting location
-        IMapController mapController = map.getController();
+        final IMapController mapController = map.getController();
         mapController.setCenter(source);
         mapController.setZoom(17.0);
 
@@ -75,8 +75,10 @@ public class MapActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, "Focusing on Location", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+                GeoPoint currentLocation = lc.getCurrentLocation();
+                mapController.setCenter(currentLocation);
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -146,6 +148,7 @@ public class MapActivity extends AppCompatActivity {
 
             //Adding visible icons for each node in route
             //Being able to handle these nodes is very important.
+            /*
             Drawable nodeIcon = getResources().getDrawable(R.drawable.marker_node);
             for (int i=0; i<road.mNodes.size(); i++){
                 RoadNode node = road.mNodes.get(i);
@@ -157,6 +160,7 @@ public class MapActivity extends AppCompatActivity {
                 nodeMarker.setSubDescription(Road.getLengthDurationText(MapActivity.this, node.mLength, node.mDuration));
                 map.getOverlays().add(nodeMarker);
             }//End for
+            */
         }//End onPostExecute()
     }//End UpdateRoadTask()
 
