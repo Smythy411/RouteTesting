@@ -68,9 +68,8 @@ public class MapActivity extends AppCompatActivity {
 
         //Sets the inital zoom level and starting location
         IMapController mapController = map.getController();
-        GeoPoint startLocation = new GeoPoint(53.33703598,-6.26822574,0.0);
-        mapController.setCenter(startLocation);
-        mapController.setZoom(16.0);
+        mapController.setCenter(source);
+        mapController.setZoom(17.0);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -104,11 +103,6 @@ public class MapActivity extends AppCompatActivity {
             waypoints.add(new GeoPoint(Double.parseDouble(target.getLat()),
                     Double.parseDouble(target.getLon())));
         }
-
-        //Sets the inital zoom level and starting location
-        IMapController mapController = map.getController();
-        mapController.zoomTo(16.0);
-        mapController.setCenter(waypoints.get(0));
 
         BoundingBox bb = map.getBoundingBox();
         System.out.println(bb);

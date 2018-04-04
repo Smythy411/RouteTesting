@@ -77,7 +77,10 @@ public class MainActivity extends AppCompatActivity {
         IMapController mapController = map.getController();
         GeoPoint startLocation = new GeoPoint(lc.getCurrentLocation());
         mapController.setCenter(startLocation);
-        mapController.setZoom(16.0);
+        mapController.setZoom(17.0);
+
+        TextView currentLocation = (TextView) findViewById((R.id.currentLocationTV));
+        currentLocation.setText(startLocation.getLatitude() + ", " + startLocation.getLongitude());
     }
 
     @Override
@@ -106,12 +109,18 @@ public class MainActivity extends AppCompatActivity {
             GeoPoint source = lc.getCurrentLocation();
             double latitude = source.getLatitude();
             double longitude = source.getLongitude();
+            BoundingBox bb = map.getProjection().getBoundingBox();
+            System.out.println("Bounding Box: " + bb);
 
-            String sourceLat = "?sourceLat=" + String.valueOf(latitude);
-            String sourceLon =  "?sourceLon=" + String.valueOf(longitude);
-            String reqDistance =  "?reqDistance=" + "6";
+            String sourceLat = "sourceLat=" + String.valueOf(latitude);
+            String sourceLon =  "sourceLon=" + String.valueOf(longitude);
+            String reqDistance =  "reqDistance=" + "3";
+            String x1 = "x1=" + bb.getLatSouth();
+            String y1 = "y1=" + bb.getLonWest();
+            String x2 = "x2=" + bb.getLatNorth();
+            String y2 = "y2=" + bb.getLonEast();
 
-            new HttpGraphRequestTask().execute("GetSimpleGraph", reqDistance, sourceLat, sourceLon);
+            new HttpGraphRequestTask().execute("GetSimpleGraph", reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -134,14 +143,11 @@ public class MainActivity extends AppCompatActivity {
         startActivity(mapIntent);
     }
 
-    private class HttpGraphRequestTask extends AsyncTask<String, Void, OSMEdge[]> {
+    private class HttpGraphRequestTask extends AsyncTask<String, Integer, OSMEdge[]> {
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-
-            BoundingBox bb = map.getProjection().getBoundingBox();
-            System.out.println("Bounding Box: " + bb);
 
             progressDialog = new ProgressDialog(MainActivity.this);
             progressDialog.setCancelable(true);
@@ -156,7 +162,15 @@ public class MainActivity extends AppCompatActivity {
             try {
                 String url = "http://46.101.77.71:8080/drfr-backend/";
                 if (endpoint[0].equals("GetSimpleGraph")){
-                     url = url + endpoint[0] + endpoint[1] + "&" + endpoint[2] +  "&" + endpoint[3];
+                    url = url + endpoint[0] + "?";
+                    for (int i = 1; i < endpoint.length; i++) {
+                        url = url + endpoint[i];
+                        if (i == endpoint.length - 1) {
+                            Log.i("GET", url);
+                        } else {
+                            url = url + "&";
+                        }
+                    }
                 } else {
                     url = url + endpoint[0];
                 }
@@ -172,6 +186,11 @@ public class MainActivity extends AppCompatActivity {
             }
 
             return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
         }
 
         @Override
