@@ -46,7 +46,6 @@ public class LocationController implements LocationListener {
     }
 
     public void setCurrentLocation() {
-        System.out.println("In setCurrentLocation");
         mgr = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // Should we show an explanation?
@@ -93,7 +92,7 @@ public class LocationController implements LocationListener {
                 currentLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
                 Log.i("currentLocation", String.valueOf(currentLocation));
             } else {
-                Log.i("currentLocation", String.valueOf(currentLocation));
+                Log.i("currentLocation", "In the Ivory Coast somewhere I guess: " + String.valueOf(currentLocation));
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -128,7 +127,6 @@ public class LocationController implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        System.out.println("In onLocationChanged");
         currentLocation = new GeoPoint(location);
         Log.i("currentLocation", String.valueOf(currentLocation));
         myLocation.setPosition(new GeoPoint(currentLocation));

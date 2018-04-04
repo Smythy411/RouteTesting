@@ -2,6 +2,7 @@ package org.eoin.route.routetesting;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -50,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
     MapView map;
     LocationController lc;
 
+    private ProgressDialog progressDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,13 +75,9 @@ public class MainActivity extends AppCompatActivity {
 
         //Sets the inital zoom level and starting location
         IMapController mapController = map.getController();
-        GeoPoint startLocation = new GeoPoint(53.33703598,-6.26822574,0.0);
+        GeoPoint startLocation = new GeoPoint(lc.getCurrentLocation());
         mapController.setCenter(startLocation);
         mapController.setZoom(16.0);
-
-        BoundingBox bb = map.getProjection().getBoundingBox();
-        System.out.println(bb);
-
     }
 
     @Override
@@ -101,10 +100,6 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.action_simpleLoop) {
-
-            BoundingBox bb = map.getProjection().getBoundingBox();
-            System.out.println("Bounding Box: " + bb);
-
             map.getOverlays().clear();
             map.invalidate();
 
@@ -140,6 +135,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class HttpGraphRequestTask extends AsyncTask<String, Void, OSMEdge[]> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            BoundingBox bb = map.getProjection().getBoundingBox();
+            System.out.println("Bounding Box: " + bb);
+
+            progressDialog = new ProgressDialog(MainActivity.this);
+            progressDialog.setCancelable(true);
+            progressDialog.setMessage("Your route is being generated!");
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setProgress(0);
+            progressDialog.show();
+        }
+
         @Override
         protected OSMEdge[] doInBackground(String... endpoint) {
             try {
@@ -165,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(OSMEdge[] edges) {
+            progressDialog.dismiss();
             launchMapActivity(edges);
         }
     }
