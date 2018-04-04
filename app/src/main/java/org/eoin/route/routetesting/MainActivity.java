@@ -20,6 +20,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     //Map view
     MapView map;
     LocationController lc;
+    GeoPoint startLocation;
 
     private ProgressDialog progressDialog;
 
@@ -66,21 +70,42 @@ public class MainActivity extends AppCompatActivity {
         map = (MapView) findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
 
-        //Enables zoom
-        map.setBuiltInZoomControls(true);
-        map.setMultiTouchControls(true);
-
         this.lc = new LocationController(this, ctx, map);
         lc.addOverlays();
 
         //Sets the inital zoom level and starting location
         IMapController mapController = map.getController();
-        GeoPoint startLocation = new GeoPoint(lc.getCurrentLocation());
+        startLocation = new GeoPoint(lc.getCurrentLocation());
         mapController.setCenter(startLocation);
         mapController.setZoom(17.0);
 
+        double startLat = startLocation.getLatitude();
+        double startLon = startLocation.getLongitude();
+
         TextView currentLocation = (TextView) findViewById((R.id.currentLocationTV));
-        currentLocation.setText(startLocation.getLatitude() + ", " + startLocation.getLongitude());
+        currentLocation.setText(startLat + ", " + startLon);
+
+        final Button generateRouteButton = findViewById(R.id.generateRouteButton);
+        generateRouteButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Code here executes on main thread after user presses button
+                BoundingBox bb = map.getProjection().getBoundingBox();
+                System.out.println("Bounding Box: " + bb);
+
+                EditText routeLengthET = (EditText) findViewById(R.id.routeLengthET);
+                String routeLength = routeLengthET.getText().toString();
+
+                String sourceLat = "sourceLat=" + String.valueOf(startLocation.getLatitude());
+                String sourceLon =  "sourceLon=" + String.valueOf(startLocation.getLongitude());
+                String reqDistance =  "reqDistance=" + routeLength;
+                String x1 = "x1=" + bb.getLatSouth();
+                String y1 = "y1=" + bb.getLonWest();
+                String x2 = "x2=" + bb.getLatNorth();
+                String y2 = "y2=" + bb.getLonEast();
+
+                new HttpGraphRequestTask().execute("GetSimpleGraph", reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
+            }
+        });
     }
 
     @Override
@@ -150,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
             super.onPreExecute();
 
             progressDialog = new ProgressDialog(MainActivity.this);
-            progressDialog.setCancelable(true);
+            progressDialog.setCancelable(false);
             progressDialog.setMessage("Your route is being generated!");
             progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             progressDialog.setProgress(0);
