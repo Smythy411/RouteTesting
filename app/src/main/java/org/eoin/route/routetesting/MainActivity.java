@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -176,9 +177,11 @@ public class MainActivity extends AppCompatActivity {
 
     private class HttpGraphRequestTask extends AsyncTask<String, Integer, OSMEdge[]> {
 
+        public HttpGraphRequestTask thisAsyncTask;
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            thisAsyncTask = this;
 
             progressDialog = new ProgressDialog(MainActivity.this);
             progressDialog.setCancelable(false);
@@ -186,6 +189,22 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             progressDialog.setProgress(0);
             progressDialog.show();
+
+            new CountDownTimer(45000, 1000) {
+                public void onTick(long millisUntilFinished) {
+                    Log.i("Time Left", millisUntilFinished / 1000 + " seconds left");
+                    if (millisUntilFinished / 1000 == 10) {
+                        progressDialog.setCancelable(true);
+                        progressDialog.setMessage("This sure is taking some time!");
+                    }
+                }
+                public void onFinish() {
+                    if (thisAsyncTask.getStatus() == AsyncTask.Status.RUNNING) {
+                        thisAsyncTask.cancel(false);
+                        progressDialog.dismiss();
+                    }
+                }
+            }.start();
         }
 
         @Override

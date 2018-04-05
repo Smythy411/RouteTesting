@@ -138,12 +138,12 @@ public class LocationController implements LocationListener {
             enableLocation.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                     Intent settings = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    context.startActivity(settings);
+                    activity.startActivity(settings);
                 }//End onClick
             });// End Positive Button
             enableLocation.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
-                    activity.setResult(Activity.RESULT_CANCELED);
+                    dialog.cancel();
                 }//End onClick
             });//End Negative Button
             enableLocation.show();
@@ -154,19 +154,8 @@ public class LocationController implements LocationListener {
         return this.currentLocation;
     }
 
-    public void onPause() {
-        mMapView.onPause();
-        if (mgr != null)
-            try {
-                mgr.removeUpdates(this);
-                mgr = null;
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-    }
-
-    public void onDestroy() {
-        Log.d(TAG, "onDestroy");
+    public void stopLocationServices() {
+        Log.d(TAG, "Stopping Location Services");
         if (mgr != null)
             try {
                 mgr.removeUpdates(this);
