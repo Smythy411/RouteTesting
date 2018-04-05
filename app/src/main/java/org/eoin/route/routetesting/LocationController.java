@@ -4,11 +4,13 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -34,6 +36,17 @@ public class LocationController implements LocationListener {
         this.activity = activity;
         this.context = ctx;
         this.mMapView = m;
+        this.currentLocation = new GeoPoint(0.0, 0.0);
+        mgr = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        setCurrentLocation();
+    }
+
+    public LocationController(Activity activity, Context ctx, MapView m, GeoPoint cl) {
+        this.activity = activity;
+        this.context = ctx;
+        this.mMapView = m;
+        this.currentLocation = cl;
+        mgr = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         setCurrentLocation();
     }
 
@@ -45,7 +58,23 @@ public class LocationController implements LocationListener {
     }
 
     public void setCurrentLocation() {
-        mgr = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        checkLocationPermission();
+        checkLocationOn();
+        try {
+            mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this);
+            Location location = mgr.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if( location != null ) {
+                currentLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
+                Log.i("currentLocation1", String.valueOf(currentLocation));
+            } else {
+                Log.i("currentLocation", "In the Ivory Coast somewhere I guess: " + String.valueOf(currentLocation));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void checkLocationPermission() {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this.activity,
@@ -56,9 +85,9 @@ public class LocationController implements LocationListener {
                 // sees the explanation, try again to request the permission.
                 //if (!enabled) {
                 //Simple AlertBox to ask the user to enable their location.
-                final AlertDialog.Builder enableLocation = new AlertDialog.Builder(context);
-                enableLocation.setTitle("This application requires permission to access your location." +
-                        "Would you like to enable your location?");
+                final AlertDialog.Builder enableLocation = new AlertDialog.Builder(activity);
+                enableLocation.setTitle("This application requires permission to access your location.");
+                enableLocation.setMessage("Would you like to give this application location permissions?");
 
                 //If user wishes to continue with their action
                 enableLocation.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -84,19 +113,42 @@ public class LocationController implements LocationListener {
             }
             return;
         }
+    }
+
+    public void checkLocationOn() {
+        boolean gpsEnabled = false;
+        boolean networkEnabled = false;
+
         try {
-            mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this);
-            Location location = mgr.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            if( location != null ) {
-                currentLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
-                Log.i("currentLocation1", String.valueOf(currentLocation));
-            } else {
-                Log.i("currentLocation", "In the Ivory Coast somewhere I guess: " + String.valueOf(currentLocation));
-            }
+            gpsEnabled = mgr.isProviderEnabled(LocationManager.GPS_PROVIDER);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-    }
+        try {
+            networkEnabled = mgr.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        if (!gpsEnabled && !networkEnabled) {
+            final AlertDialog.Builder enableLocation = new AlertDialog.Builder(activity);
+            //final AlertDialog el = enableLocation.create();
+            enableLocation.setTitle("This application requires your location.");
+            enableLocation.setMessage("Would you like to enable your location?");
+            enableLocation.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    Intent settings = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    context.startActivity(settings);
+                }//End onClick
+            });// End Positive Button
+            enableLocation.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    activity.setResult(Activity.RESULT_CANCELED);
+                }//End onClick
+            });//End Negative Button
+            enableLocation.show();
+        }//End if
+    }//End checkLocationOn()
 
     public GeoPoint getCurrentLocation() {
         return this.currentLocation;

@@ -155,6 +155,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         lc.setCurrentLocation();
         super.onStart();
+
+        IMapController mapController = map.getController();
+        startLocation = new GeoPoint(lc.getCurrentLocation());
+        mapController.setCenter(startLocation);
+        mapController.setZoom(17.0);
+
         //new HttpGraphRequestTask().execute("GetGraph");
     }
 
