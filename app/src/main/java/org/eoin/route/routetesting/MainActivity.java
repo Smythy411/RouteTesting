@@ -113,15 +113,19 @@ public class MainActivity extends AppCompatActivity {
                 EditText routeLengthET = (EditText) findViewById(R.id.routeLengthET);
                 String routeLength = routeLengthET.getText().toString();
 
-                String sourceLat = "sourceLat=" + String.valueOf(startLocation.getLatitude());
-                String sourceLon =  "sourceLon=" + String.valueOf(startLocation.getLongitude());
-                String reqDistance =  "reqDistance=" + routeLength;
-                String x1 = "x1=" + bb.getLatSouth();
-                String y1 = "y1=" + bb.getLonWest();
-                String x2 = "x2=" + bb.getLatNorth();
-                String y2 = "y2=" + bb.getLonEast();
+                if (routeLength.equals("") || Double.parseDouble(routeLength) <= 1.99) {
+                    Toast.makeText(MainActivity.this, "Distance must be at least 2km", Toast.LENGTH_SHORT).show();
+                } else {
+                    String reqDistance =  "reqDistance=" + routeLength;
+                    String sourceLat = "sourceLat=" + String.valueOf(startLocation.getLatitude());
+                    String sourceLon =  "sourceLon=" + String.valueOf(startLocation.getLongitude());
+                    String x1 = "x1=" + bb.getLatSouth();
+                    String y1 = "y1=" + bb.getLonWest();
+                    String x2 = "x2=" + bb.getLatNorth();
+                    String y2 = "y2=" + bb.getLonEast();
 
-                new HttpGraphRequestTask().execute("GetSimpleGraph", reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
+                    new HttpGraphRequestTask().execute("GetSimpleGraph", reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
+                }
             }
         });
     }
