@@ -16,6 +16,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.widget.TextView;
 
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -200,13 +201,16 @@ public class LocationController implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
+        currentLocation = new GeoPoint(location);
         Log.i("Activity: ", activity.getLocalClassName());
         if (activity.getLocalClassName().equals("MainActivity")) {
             ConstraintLayout generateRouteUI = (ConstraintLayout) activity.findViewById(R.id.generateRouteUI);
             generateRouteUI.setVisibility(ConstraintLayout.VISIBLE);
+
+            TextView currentLocationTV = (TextView) activity.findViewById((R.id.currentLocationTV));
+            currentLocationTV.setText(currentLocation.getLatitude() + ", " + currentLocation.getLongitude());
         }
 
-        currentLocation = new GeoPoint(location);
         Log.i("currentLocation2", String.valueOf(currentLocation));
         myLocation.setPosition(new GeoPoint(currentLocation));
         if (!added) {
@@ -215,6 +219,8 @@ public class LocationController implements LocationListener {
         }
         if (followme) {
             mMapView.getController().animateTo(myLocation.getPosition());
+            mMapView.setMultiTouchControls(false);
+            mMapView.setBuiltInZoomControls(false);
         }
     }
 

@@ -79,6 +79,10 @@ public class MainActivity extends AppCompatActivity {
         this.lc = new LocationController(this, ctx, map);
         lc.addOverlays();
 
+        System.out.println(map.getMaxZoomLevel() + " / " + map.getMinZoomLevel());
+        map.setMaxZoomLevel(17.0);
+        map.setMinZoomLevel(13.0);
+
         //Sets the inital zoom level and starting location
         IMapController mapController = map.getController();
         if (lc.getCurrentLocation() != null) {
@@ -92,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
             map.setMultiTouchControls(true);
             mapController.setCenter(new GeoPoint(53.3498, -6.2603));
             mapController.setZoom(13.0);
+
+            map.zoomToBoundingBox(dublin, true, 5);
 
             ConstraintLayout generateRouteUI = (ConstraintLayout) findViewById(R.id.generateRouteUI);
             generateRouteUI.setVisibility(ConstraintLayout.GONE);
@@ -202,6 +208,7 @@ public class MainActivity extends AppCompatActivity {
         Bundle extras = new Bundle();
         extras.putSerializable("sourceLocation", lc.getCurrentLocation());
         extras.putSerializable("edges", edges);
+        extras.putSerializable("dublin", dublin);
 
         mapIntent.putExtras(extras);
         startActivity(mapIntent);

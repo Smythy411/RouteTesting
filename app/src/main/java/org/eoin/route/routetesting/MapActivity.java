@@ -54,10 +54,15 @@ public class MapActivity extends AppCompatActivity {
         Bundle extras = intent.getExtras();
         GeoPoint source = (GeoPoint) intent.getSerializableExtra("sourceLocation");
         OSMEdge[] edges = (OSMEdge[]) intent.getSerializableExtra("edges");
+        BoundingBox dublin = (BoundingBox) intent.getSerializableExtra("dublin");
         System.out.println("Source: " + source);
 
         map = (MapView) findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
+        map.setScrollableAreaLimitDouble(dublin);
+
+        map.setMaxZoomLevel(17.0);
+        map.setMinZoomLevel(13.0);
 
         //Enables zoom
         map.setBuiltInZoomControls(true);
