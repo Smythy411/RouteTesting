@@ -13,4 +13,9 @@
         android:title="@string/action_simpleLoop"
         android:orderInCategory="101"
         app:showAsAction="never" />
+
+    <item android:id="@+id/action_refreshLocation"
+        android:title="@string/action_refreshLocation"
+        android:orderInCategory="102"
+        app:showAsAction="never" />
 </menu>

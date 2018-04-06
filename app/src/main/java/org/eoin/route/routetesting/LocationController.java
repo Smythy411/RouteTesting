@@ -11,6 +11,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -36,8 +38,7 @@ public class LocationController implements LocationListener {
         this.activity = activity;
         this.context = ctx;
         this.mMapView = m;
-        this.currentLocation = new GeoPoint(0.0, 0.0);
-        mgr = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        //this.currentLocation = new GeoPoint(0.0, 0.0);
         setCurrentLocation();
     }
 
@@ -58,11 +59,18 @@ public class LocationController implements LocationListener {
     }
 
     public void setCurrentLocation() {
+        mgr = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         checkLocationPermission();
         checkLocationOn();
         try {
+            Location gpsLocation = null;
+            Location networkLocation = null;
             mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this);
-            Location location = mgr.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            mgr.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,  0L, 0, this);
+            gpsLocation = mgr.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            networkLocation = mgr.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+            Location location = betterLocation(gpsLocation, networkLocation);
             if( location != null ) {
                 currentLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
                 Log.i("currentLocation1", String.valueOf(currentLocation));
@@ -71,6 +79,27 @@ public class LocationController implements LocationListener {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+
+    private Location betterLocation(Location location1, Location location2) {
+        System.out.println(location1 + " / " + location2);
+        if (location1 == null && location2 == null) {
+            return null;
+        }
+
+        if (location1 != null && location2 == null) {
+            return location1;
+        }
+
+        if (location1 == null && location2 != null) {
+            return location2;
+        }
+
+        if (location1.getAccuracy() < location2.getAccuracy()) {
+            return location1;
+        } else {
+            return location2;
         }
     }
 
@@ -151,7 +180,11 @@ public class LocationController implements LocationListener {
     }//End checkLocationOn()
 
     public GeoPoint getCurrentLocation() {
-        return this.currentLocation;
+        if (this.currentLocation != null) {
+            return this.currentLocation;
+        } else {
+            return null;
+        }
     }
 
     public void stopLocationServices() {
@@ -167,6 +200,12 @@ public class LocationController implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
+        Log.i("Activity: ", activity.getLocalClassName());
+        if (activity.getLocalClassName().equals("MainActivity")) {
+            ConstraintLayout generateRouteUI = (ConstraintLayout) activity.findViewById(R.id.generateRouteUI);
+            generateRouteUI.setVisibility(ConstraintLayout.VISIBLE);
+        }
+
         currentLocation = new GeoPoint(location);
         Log.i("currentLocation2", String.valueOf(currentLocation));
         myLocation.setPosition(new GeoPoint(currentLocation));

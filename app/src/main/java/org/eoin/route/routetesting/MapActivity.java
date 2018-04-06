@@ -63,7 +63,7 @@ public class MapActivity extends AppCompatActivity {
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
 
-        this.lc = new LocationController(this, ctx, map);
+        this.lc = new LocationController(this, ctx, map, source);
         lc.addOverlays();
 
         //Sets the inital zoom level and starting location

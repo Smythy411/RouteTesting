@@ -13,6 +13,7 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -54,7 +55,9 @@ public class MainActivity extends AppCompatActivity {
     //Map view
     MapView map;
     LocationController lc;
-    GeoPoint startLocation;
+    GeoPoint startLocation =  new GeoPoint(0,0);
+
+    BoundingBox dublin = new BoundingBox(53.4766, -5.9924, 53.2295, -6.6900);
 
     private ProgressDialog progressDialog;
 
@@ -70,15 +73,29 @@ public class MainActivity extends AppCompatActivity {
 
         map = (MapView) findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
+        map.setScrollableAreaLimitDouble(dublin);
+        //map.zoomToBoundingBox(dublin, true, 5);
 
         this.lc = new LocationController(this, ctx, map);
         lc.addOverlays();
 
         //Sets the inital zoom level and starting location
         IMapController mapController = map.getController();
-        startLocation = new GeoPoint(lc.getCurrentLocation());
-        mapController.setCenter(startLocation);
-        mapController.setZoom(17.0);
+        if (lc.getCurrentLocation() != null) {
+            map.setMultiTouchControls(false);
+            map.setBuiltInZoomControls(false);
+            startLocation = new GeoPoint(lc.getCurrentLocation());
+            mapController.setCenter(startLocation);
+            mapController.setZoom(17.0);
+        } else {
+            map.setBuiltInZoomControls(true);
+            map.setMultiTouchControls(true);
+            mapController.setCenter(new GeoPoint(53.3498, -6.2603));
+            mapController.setZoom(13.0);
+
+            ConstraintLayout generateRouteUI = (ConstraintLayout) findViewById(R.id.generateRouteUI);
+            generateRouteUI.setVisibility(ConstraintLayout.GONE);
+        }
 
         double startLat = startLocation.getLatitude();
         double startLon = startLocation.getLongitude();
@@ -149,6 +166,22 @@ public class MainActivity extends AppCompatActivity {
             new HttpGraphRequestTask().execute("GetSimpleGraph", reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
             return true;
         }
+        if (id == R.id.action_refreshLocation) {
+            lc.setCurrentLocation();
+            IMapController mapController = map.getController();
+            if (lc.getCurrentLocation() != null) {
+                Log.i("Refresh", "succeeded");
+                startLocation = new GeoPoint(lc.getCurrentLocation());
+                mapController.setCenter(startLocation);
+                mapController.setZoom(17.0);
+            } else {
+                Log.i("Refresh", "failed");
+                map.setBuiltInZoomControls(true);
+                map.setMultiTouchControls(true);
+            }
+            System.out.println(startLocation);
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -156,11 +189,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         lc.setCurrentLocation();
         super.onStart();
-
-        IMapController mapController = map.getController();
-        startLocation = new GeoPoint(lc.getCurrentLocation());
-        mapController.setCenter(startLocation);
-        mapController.setZoom(17.0);
 
         //new HttpGraphRequestTask().execute("GetGraph");
     }
