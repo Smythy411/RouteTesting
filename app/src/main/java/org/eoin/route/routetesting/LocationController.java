@@ -18,6 +18,7 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.TextView;
 
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
@@ -209,6 +210,13 @@ public class LocationController implements LocationListener {
 
             TextView currentLocationTV = (TextView) activity.findViewById((R.id.currentLocationTV));
             currentLocationTV.setText(currentLocation.getLatitude() + ", " + currentLocation.getLongitude());
+            mMapView.setMultiTouchControls(false);
+            mMapView.setBuiltInZoomControls(false);
+
+            BoundingBox bb = mMapView.getProjection().getBoundingBox();
+            mMapView.setScrollableAreaLimitDouble(bb);
+            mMapView.getController().setCenter(currentLocation);
+            mMapView.getController().setZoom(16.0);
         }
 
         Log.i("currentLocation2", String.valueOf(currentLocation));

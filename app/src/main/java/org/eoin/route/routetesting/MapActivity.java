@@ -54,6 +54,7 @@ public class MapActivity extends AppCompatActivity {
         Bundle extras = intent.getExtras();
         GeoPoint source = (GeoPoint) intent.getSerializableExtra("sourceLocation");
         OSMEdge[] edges = (OSMEdge[]) intent.getSerializableExtra("edges");
+        double routeLength = intent.getDoubleExtra("routeLength", 0.0);
         BoundingBox dublin = (BoundingBox) intent.getSerializableExtra("dublin");
         System.out.println("Source: " + source);
 
@@ -75,6 +76,9 @@ public class MapActivity extends AppCompatActivity {
         final IMapController mapController = map.getController();
         mapController.setCenter(source);
         mapController.setZoom(17.0);
+
+        TextView routeLengthDisplay = (TextView) findViewById((R.id.routeLengthDisplay));
+        routeLengthDisplay.setText("Your Route Length is " + routeLength + "km");
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -182,6 +186,7 @@ public class MapActivity extends AppCompatActivity {
 
     protected void onStop() {
         super.onStop();
+        lc.stopLocationServices();
         //this will refresh the osmdroid configuration on resuming.
         //if you make changes to the configuration, use
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);

@@ -90,7 +90,8 @@ public class MainActivity extends AppCompatActivity {
             map.setBuiltInZoomControls(false);
             startLocation = new GeoPoint(lc.getCurrentLocation());
             mapController.setCenter(startLocation);
-            mapController.setZoom(17.0);
+            mapController.setZoom(16.0);
+
         } else {
             map.setBuiltInZoomControls(true);
             map.setMultiTouchControls(true);
@@ -130,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                     String x2 = "x2=" + bb.getLatNorth();
                     String y2 = "y2=" + bb.getLonEast();
 
-                    new HttpGraphRequestTask().execute("GetSimpleGraph", reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
+                    new HttpGraphRequestTask().execute("GetBestGraph", reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
                 }
             }
         });
@@ -173,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
             String x2 = "x2=" + bb.getLatNorth();
             String y2 = "y2=" + bb.getLonEast();
 
-            new HttpGraphRequestTask().execute("GetSimpleGraph", reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
+            new HttpGraphRequestTask().execute("GetBestGraph", reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
             return true;
         }
         if (id == R.id.action_refreshLocation) {
@@ -197,24 +198,63 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
-        lc.setCurrentLocation();
         super.onStart();
 
         //new HttpGraphRequestTask().execute("GetGraph");
     }
 
-    private void launchMapActivity(OSMEdge[] edges) {
+    private void launchMapActivity(Route route) {
+        ArrayList<OSMEdge> routeEdges = route.getRoute();
+        OSMEdge[] edges = routeEdges.toArray(new OSMEdge[routeEdges.size()]);
+        double routeLength = route.getWeight();
         Intent mapIntent = new Intent(this, MapActivity.class);
         Bundle extras = new Bundle();
         extras.putSerializable("sourceLocation", lc.getCurrentLocation());
         extras.putSerializable("edges", edges);
+        extras.putDouble("routeLength", routeLength);
         extras.putSerializable("dublin", dublin);
 
         mapIntent.putExtras(extras);
         startActivity(mapIntent);
     }
 
-    private class HttpGraphRequestTask extends AsyncTask<String, Integer, OSMEdge[]> {
+    private class HttpSizeCheckTask extends AsyncTask<String, Void, String> {
+
+        protected void onPreExecute() {
+
+        }
+
+        protected String doInBackground(String... endpoint) {
+            try {
+            String url = "http://46.101.77.71:8080/drfr-backend/";
+                url = url + endpoint[0] + "?";
+                for (int i = 1; i < endpoint.length; i++) {
+                    url = url + endpoint[i];
+                    if (i == endpoint.length - 1) {
+                        Log.i("GET", url);
+                    } else {
+                        url = url + "&";
+                    }
+                }
+                /*
+                RestTemplate restTemplate = new RestTemplate();
+                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+                ResponseEntity<int> responseEntity = restTemplate.getForEntity(url, Integer);
+
+                int edges =  responseEntity.getBody();
+                */
+            } catch (Exception e) {
+                Log.e("MainActivity", e.getMessage(), e);
+            }
+            return null;
+        }
+
+        protected void onPostExecute() {
+
+        }
+    }
+
+    private class HttpGraphRequestTask extends AsyncTask<String, Integer, Route> {
 
         public HttpGraphRequestTask thisAsyncTask;
         @Override
@@ -229,17 +269,19 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.setProgress(0);
             progressDialog.show();
 
-            new CountDownTimer(45000, 1000) {
+            new CountDownTimer(270000, 1000) {
                 public void onTick(long millisUntilFinished) {
                     Log.i("Time Left", millisUntilFinished / 1000 + " seconds left");
-                    if (millisUntilFinished / 1000 == 10) {
-                        progressDialog.setCancelable(true);
+                    if (millisUntilFinished / 1000 == 180) {
                         progressDialog.setMessage("This sure is taking some time!");
+                    } else if (millisUntilFinished / 1000 == 60) {
+                        progressDialog.setCancelable(true);
+                        progressDialog.setMessage("Its working hard behind the scenes I swear!");
                     }
                 }
                 public void onFinish() {
                     if (thisAsyncTask.getStatus() == AsyncTask.Status.RUNNING) {
-                        thisAsyncTask.cancel(false);
+                        //thisAsyncTask.cancel(false);
                         progressDialog.dismiss();
                     }
                 }
@@ -247,10 +289,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected OSMEdge[] doInBackground(String... endpoint) {
+        protected Route doInBackground(String... endpoint) {
             try {
                 String url = "http://46.101.77.71:8080/drfr-backend/";
-                if (endpoint[0].equals("GetSimpleGraph")){
+                if (endpoint[0].equals("GetSimpleGraph") || endpoint[0].equals("GetBestGraph")){
                     url = url + endpoint[0] + "?";
                     for (int i = 1; i < endpoint.length; i++) {
                         url = url + endpoint[i];
@@ -265,11 +307,13 @@ public class MainActivity extends AppCompatActivity {
                 }
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-                ResponseEntity<OSMEdge[]> responseEntity = restTemplate.getForEntity(url, OSMEdge[].class);
+                ResponseEntity<Route> responseEntity = restTemplate.getForEntity(url, Route.class);
 
-                OSMEdge[] edges =  responseEntity.getBody();
+                Route route =  responseEntity.getBody();
+                Log.i("edges", "" + route.getRoute().size());
+                Log.i("length", "" + route.getWeight());
 
-                return edges;
+                return route;
             } catch (Exception e) {
                 Log.e("MainActivity", e.getMessage(), e);
             }
@@ -283,9 +327,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(OSMEdge[] edges) {
+        protected void onPostExecute(Route route) {
             progressDialog.dismiss();
-            launchMapActivity(edges);
+            launchMapActivity(route);
         }
     }
 
@@ -302,6 +346,7 @@ public class MainActivity extends AppCompatActivity {
 
     protected void onStop() {
         super.onStop();
+        lc.stopLocationServices();
         //this will refresh the osmdroid configuration on resuming.
         //if you make changes to the configuration, use
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
