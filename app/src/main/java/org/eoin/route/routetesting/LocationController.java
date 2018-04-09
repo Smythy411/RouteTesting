@@ -34,7 +34,7 @@ public class LocationController implements LocationListener {
     LocationManager mgr;
     Marker myLocation;
     boolean added = false;
-    boolean followme=true;
+    boolean followme = false;
 
     public LocationController(Activity activity, Context ctx, MapView m) {
         this.activity = activity;
@@ -221,7 +221,6 @@ public class LocationController implements LocationListener {
             BoundingBox bb = mMapView.getProjection().getBoundingBox();
             mMapView.setScrollableAreaLimitDouble(bb);
             mMapView.getController().setCenter(currentLocation);
-            mMapView.getController().setZoom(16.0);
         }
 
         Log.i("currentLocation2", String.valueOf(currentLocation));
