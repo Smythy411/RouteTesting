@@ -1,22 +1,12 @@
 package org.eoin.route.routetesting;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.support.constraint.ConstraintLayout;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,29 +15,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
-import org.osmdroid.bonuspack.routing.MapQuestRoadManager;
-import org.osmdroid.bonuspack.routing.OSRMRoadManager;
-import org.osmdroid.bonuspack.routing.Road;
-import org.osmdroid.bonuspack.routing.RoadManager;
-import org.osmdroid.bonuspack.routing.RoadNode;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.Polyline;
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -60,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     BoundingBox dublin = new BoundingBox(53.4766, -5.9924, 53.2295, -6.6900);
 
     private ProgressDialog progressDialog;
+
+    String routeChoice = "GetBestGraph";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,11 +114,32 @@ public class MainActivity extends AppCompatActivity {
                     String x2 = "x2=" + bb.getLatNorth();
                     String y2 = "y2=" + bb.getLonEast();
 
-                    new HttpGraphRequestTask().execute("GetBestGraph", reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
+                    new HttpGraphRequestTask().execute(routeChoice, reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
                 }
             }
         });
     }
+
+    public void onRadioButtonClicked(View view) {
+        // Is the button now checked?
+        boolean checked = ((RadioButton) view).isChecked();
+
+        // Check which radio button was clicked
+        switch(view.getId()) {
+            case R.id.radio_quick:
+                if (checked) {
+                    routeChoice = "GetQuickGraph";
+                    Log.i("routeChoice", routeChoice);
+                    break;
+                }//end if
+            case R.id.radio_optimal:
+                if (checked) {
+                    routeChoice = "GetBestGraph";
+                    Log.i("routeChoice", routeChoice);
+                    break;
+                }//end if
+        }//end switch
+    }//end onRadioButtonClicked
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -218,42 +222,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(mapIntent);
     }
 
-    private class HttpSizeCheckTask extends AsyncTask<String, Void, String> {
-
-        protected void onPreExecute() {
-
-        }
-
-        protected String doInBackground(String... endpoint) {
-            try {
-            String url = "http://46.101.77.71:8080/drfr-backend/";
-                url = url + endpoint[0] + "?";
-                for (int i = 1; i < endpoint.length; i++) {
-                    url = url + endpoint[i];
-                    if (i == endpoint.length - 1) {
-                        Log.i("GET", url);
-                    } else {
-                        url = url + "&";
-                    }
-                }
-                /*
-                RestTemplate restTemplate = new RestTemplate();
-                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-                ResponseEntity<int> responseEntity = restTemplate.getForEntity(url, Integer);
-
-                int edges =  responseEntity.getBody();
-                */
-            } catch (Exception e) {
-                Log.e("MainActivity", e.getMessage(), e);
-            }
-            return null;
-        }
-
-        protected void onPostExecute() {
-
-        }
-    }
-
     private class HttpGraphRequestTask extends AsyncTask<String, Integer, Route> {
 
         public HttpGraphRequestTask thisAsyncTask;
@@ -292,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
         protected Route doInBackground(String... endpoint) {
             try {
                 String url = "http://46.101.77.71:8080/drfr-backend/";
-                if (endpoint[0].equals("GetSimpleGraph") || endpoint[0].equals("GetBestGraph")){
+                if (endpoint[0].equals("GetQuickGraph") || endpoint[0].equals("GetBestGraph")){
                     url = url + endpoint[0] + "?";
                     for (int i = 1; i < endpoint.length; i++) {
                         url = url + endpoint[i];
