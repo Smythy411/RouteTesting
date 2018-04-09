@@ -10,18 +10,6 @@
         android:id="@+id/include"
         layout="@layout/content_map" />
 
-    <TextView
-        android:id="@+id/routeLengthDisplay"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="#77000000"
-        android:gravity="center"
-        android:text="Your route length is "
-        android:textAlignment="center"
-        android:textColor="@android:color/white"
-        app:layout_anchor="@+id/include"
-        app:layout_anchorGravity="left|top" />
-
     <org.osmdroid.views.MapView
         android:id="@+id/map"
         android:layout_width="match_parent"
@@ -34,7 +22,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/location"/>
+        android:src="@drawable/center"
+        app:backgroundTint="#dedddd" />
 
     <Button
         android:id="@+id/toggle_run"
@@ -43,5 +32,32 @@
         android:text="Start Run"
         app:layout_anchor="@+id/include"
         app:layout_anchorGravity="bottom|center" />
+
+    <TextView
+        android:id="@+id/routeLengthDisplay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#77000000"
+        android:gravity="center"
+        android:text="Your route length is "
+        android:textAlignment="center"
+        android:textColor="@android:color/white"
+        android:visibility="visible"
+        app:layout_anchor="@+id/map"
+        app:layout_anchorGravity="top|center" />
+
+    <Chronometer
+        android:id="@+id/chronometer"
+        android:layout_width="124dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:paddingBottom="30dip"
+        android:paddingTop="30dip"
+        android:textAlignment="center"
+        android:textColor="@android:color/holo_purple"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        app:layout_anchor="@+id/map"
+        app:layout_anchorGravity="top|center" />
 
 </android.support.design.widget.CoordinatorLayout>

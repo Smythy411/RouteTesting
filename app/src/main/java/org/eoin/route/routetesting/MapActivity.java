@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -13,6 +14,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +39,8 @@ public class MapActivity extends AppCompatActivity {
 
     MapView map;
     LocationController lc;
+    Chronometer mChrono;
+    long timeWhenStopped = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +92,8 @@ public class MapActivity extends AppCompatActivity {
             }
         });
 
+        mChrono = (Chronometer) findViewById(R.id.chronometer);
+
         final Button toggleRunButton = findViewById(R.id.toggle_run);
         toggleRunButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -95,10 +101,19 @@ public class MapActivity extends AppCompatActivity {
                     mapController.setZoom(18.0);
                     lc.setFollow(true);
                     toggleRunButton.setText("Stop Run");
+
+                    mChrono.setBase(SystemClock.elapsedRealtime());
+                    timeWhenStopped = 0;
+                    mChrono.start();
                 } else {
                     mapController.setZoom(16.0);
                     lc.setFollow(false);
                     toggleRunButton.setText("Start Run");
+
+                    timeWhenStopped = mChrono.getBase() - SystemClock.elapsedRealtime();
+
+                    mChrono.stop();
+                    mChrono.setBase(SystemClock.elapsedRealtime());
                 }
             }
         });

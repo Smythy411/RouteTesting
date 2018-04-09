@@ -254,6 +254,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onFinish() {
                     if (thisAsyncTask.getStatus() == AsyncTask.Status.RUNNING) {
                         //thisAsyncTask.cancel(false);
+
                         progressDialog.dismiss();
                     }
                 }
