@@ -44,11 +44,12 @@ public class LocationController implements LocationListener {
         setCurrentLocation();
     }
 
-    public LocationController(Activity activity, Context ctx, MapView m, GeoPoint cl) {
+    public LocationController(Activity activity, Context ctx, MapView m, GeoPoint cl, boolean fm) {
         this.activity = activity;
         this.context = ctx;
         this.mMapView = m;
         this.currentLocation = cl;
+        this.followme = false;
         mgr = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         setCurrentLocation();
     }
@@ -180,6 +181,10 @@ public class LocationController implements LocationListener {
             enableLocation.show();
         }//End if
     }//End checkLocationOn()
+
+    public void setFollow(boolean fm) {
+        this.followme = fm;
+    }
 
     public GeoPoint getCurrentLocation() {
         if (this.currentLocation != null) {

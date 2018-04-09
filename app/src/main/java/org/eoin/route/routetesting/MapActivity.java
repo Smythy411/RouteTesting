@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,13 +43,9 @@ public class MapActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
         Context ctx = getApplicationContext();
         //important! set your user agent to prevent getting banned from the osm servers
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
-
 
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
@@ -62,14 +59,14 @@ public class MapActivity extends AppCompatActivity {
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setScrollableAreaLimitDouble(dublin);
 
-        map.setMaxZoomLevel(17.0);
+        map.setMaxZoomLevel(18.0);
         map.setMinZoomLevel(13.0);
 
         //Enables zoom
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
 
-        this.lc = new LocationController(this, ctx, map, source);
+        this.lc = new LocationController(this, ctx, map, source, false);
         lc.addOverlays();
 
         //Sets the inital zoom level and starting location
@@ -90,7 +87,21 @@ public class MapActivity extends AppCompatActivity {
                 mapController.setCenter(currentLocation);
             }
         });
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        final Button toggleRunButton = findViewById(R.id.toggle_run);
+        toggleRunButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (toggleRunButton.getText().equals("Start Run")) {
+                    mapController.setZoom(18.0);
+                    lc.setFollow(true);
+                    toggleRunButton.setText("Stop Run");
+                } else {
+                    mapController.setZoom(16.0);
+                    lc.setFollow(false);
+                    toggleRunButton.setText("Start Run");
+                }
+            }
+        });
 
         constructRoute(edges);
     }
@@ -143,12 +154,6 @@ public class MapActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Road result) {
             Road road = result;
-            // showing distance and duration of the road
-            Toast.makeText(MapActivity.this, "distance="+road.mLength, Toast.LENGTH_SHORT).show();
-            Toast.makeText(MapActivity.this, "duration="+road.mDuration, Toast.LENGTH_SHORT).show();
-
-            if(road.mStatus != Road.STATUS_OK)
-                Toast.makeText(MapActivity.this, "Error when loading the road - status="+road.mStatus, Toast.LENGTH_SHORT).show();
             Polyline roadOverlay = RoadManager.buildRoadOverlay(road);
 
             map.getOverlay().clear();

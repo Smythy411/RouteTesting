@@ -14,9 +14,9 @@
 
     </org.osmdroid.views.MapView>
 
-    <TextView android:id="@+id/node_value"
+    <TextView android:id="@+id/grabbing_location"
         android:layout_width="fill_parent"
-        android:text="@string/node_value"
+        android:text="@string/grabbing_location"
         android:textAlignment="center"
         android:gravity="center"
         android:textColor="@android:color/white"

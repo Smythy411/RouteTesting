@@ -75,6 +75,10 @@ public class MainActivity extends AppCompatActivity {
             mapController.setCenter(startLocation);
             mapController.setZoom(16.0);
 
+            TextView grabbingLocation = (TextView) findViewById(R.id.grabbing_location);
+            grabbingLocation.setText("Location Found!");
+            grabbingLocation.setVisibility(TextView.GONE);
+
         } else {
             map.setBuiltInZoomControls(true);
             map.setMultiTouchControls(true);
