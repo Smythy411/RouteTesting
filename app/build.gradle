@@ -32,4 +32,6 @@ dependencies {
 
     compile 'org.springframework.android:spring-android-rest-template:1.0.1.RELEASE'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.9.4'
+
+    compile 'testfairy:testfairy-android-sdk:1.+@aar'
 }

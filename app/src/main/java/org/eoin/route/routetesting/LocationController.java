@@ -16,7 +16,9 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
@@ -210,17 +212,28 @@ public class LocationController implements LocationListener {
         currentLocation = new GeoPoint(location);
         Log.i("Activity: ", activity.getLocalClassName());
         if (activity.getLocalClassName().equals("MainActivity")) {
-            ConstraintLayout generateRouteUI = (ConstraintLayout) activity.findViewById(R.id.generateRouteUI);
-            generateRouteUI.setVisibility(ConstraintLayout.VISIBLE);
+            TextView grabbingLocation = (TextView) activity.findViewById(R.id.grabbing_location);
+            if (grabbingLocation.getVisibility() == TextView.VISIBLE) {
+                grabbingLocation.setText("Location Found!");
+                grabbingLocation.setVisibility(TextView.GONE);
+            }
 
-            TextView currentLocationTV = (TextView) activity.findViewById((R.id.currentLocationTV));
-            currentLocationTV.setText(currentLocation.getLatitude() + ", " + currentLocation.getLongitude());
-            mMapView.setMultiTouchControls(false);
-            mMapView.setBuiltInZoomControls(false);
+            ToggleButton locationToggle = (ToggleButton) activity.findViewById(R.id.toggleDVL);
+            if (locationToggle.getText().equals("Yes")) {
+                EditText editTextLat = (EditText) activity.findViewById((R.id.editTextLat));
+                EditText editTextLon = (EditText) activity.findViewById((R.id.editTextLon));
+                editTextLat.setText(String.valueOf(currentLocation.getLatitude()));
+                editTextLon.setText(String.valueOf(currentLocation.getLongitude()));
 
-            BoundingBox bb = mMapView.getProjection().getBoundingBox();
-            mMapView.setScrollableAreaLimitDouble(bb);
-            mMapView.getController().setCenter(currentLocation);
+                mMapView.setMultiTouchControls(false);
+                mMapView.setBuiltInZoomControls(false);
+
+                /*
+                BoundingBox bb = mMapView.getProjection().getBoundingBox();
+                mMapView.setScrollableAreaLimitDouble(bb);
+                mMapView.getController().animateTo(currentLocation);
+                */
+            }
         }
 
         Log.i("currentLocation2", String.valueOf(currentLocation));

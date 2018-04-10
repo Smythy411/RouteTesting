@@ -85,8 +85,6 @@ public class MapActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Focusing on Location", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
                 GeoPoint currentLocation = lc.getCurrentLocation();
                 mapController.setCenter(currentLocation);
             }
@@ -176,7 +174,6 @@ public class MapActivity extends AppCompatActivity {
             map.invalidate();
 
             //Adding visible icons for each node in route
-            //Being able to handle these nodes is very important.
             /*
             Drawable nodeIcon = getResources().getDrawable(R.drawable.marker_node);
             for (int i=0; i<road.mNodes.size(); i++){

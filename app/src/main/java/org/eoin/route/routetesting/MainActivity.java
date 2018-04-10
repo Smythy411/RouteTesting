@@ -3,23 +3,33 @@ package org.eoin.route.routetesting;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
+
+import com.testfairy.TestFairy;
 
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
@@ -27,6 +37,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
 import org.osmdroid.views.overlay.OverlayItem;
@@ -34,6 +45,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -41,7 +53,8 @@ public class MainActivity extends AppCompatActivity {
     //Map view
     MapView map;
     LocationController lc;
-    GeoPoint startLocation =  new GeoPoint(0,0);
+    GeoPoint startLocation =  new GeoPoint(53.3498, -6.2603);
+    String lastLat, lastLon;
 
     BoundingBox dublin = new BoundingBox(53.4766, -5.9924, 53.2295, -6.6900);
 
@@ -53,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        TestFairy.begin(this, "0f9247e0759acc42c24772ab9afc0a23f6c0163a");
 
         Context ctx = getApplicationContext();
         //important! set your user agent to prevent getting banned from the osm servers
@@ -67,18 +82,38 @@ public class MainActivity extends AppCompatActivity {
         this.lc = new LocationController(this, ctx, map);
         lc.addOverlays();
 
-        System.out.println(map.getMaxZoomLevel() + " / " + map.getMinZoomLevel());
         map.setMaxZoomLevel(17.0);
         map.setMinZoomLevel(13.0);
 
-        //Sets the inital zoom level and starting location
         final IMapController mapController = map.getController();
+        initialMapSetup(mapController);
+        setupSubmitButton(mapController);
+    }
+
+    public void initialMapSetup(final IMapController mapController) {
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                GeoPoint currentLocation = lc.getCurrentLocation();
+                mapController.setCenter(currentLocation);
+            }
+        });
+
         if (lc.getCurrentLocation() != null) {
             map.setMultiTouchControls(false);
             map.setBuiltInZoomControls(false);
             startLocation = new GeoPoint(lc.getCurrentLocation());
             mapController.setCenter(startLocation);
             mapController.setZoom(16.0);
+
+            EditText editTextLat = (EditText) findViewById((R.id.editTextLat));
+            EditText editTextLon = (EditText) findViewById((R.id.editTextLon));
+            editTextLat.setEnabled(false);
+            editTextLon.setEnabled(false);
+
+            fab.setVisibility(TextView.VISIBLE);
 
             TextView grabbingLocation = (TextView) findViewById(R.id.grabbing_location);
             grabbingLocation.setText("Location Found!");
@@ -88,20 +123,76 @@ public class MainActivity extends AppCompatActivity {
             map.setBuiltInZoomControls(true);
             map.setMultiTouchControls(true);
             mapController.setCenter(new GeoPoint(53.3498, -6.2603));
+            //startLocation = new GeoPoint(new GeoPoint(53.3498, -6.2603));
             mapController.setZoom(13.0);
 
+            fab.setVisibility(TextView.GONE);
+
             map.zoomToBoundingBox(dublin, true, 5);
-
-            ConstraintLayout generateRouteUI = (ConstraintLayout) findViewById(R.id.generateRouteUI);
-            generateRouteUI.setVisibility(ConstraintLayout.GONE);
-
         }
+    }
 
+    public void setUpMapTouch() {
+        map.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View arg0, MotionEvent arg1) {
+                Projection proj = map.getProjection();
+                GeoPoint p = (GeoPoint) proj.fromPixels((int) arg1.getX(), (int) arg1.getY());
+                Location location = new Location("");
+                location.setLatitude((double) p.getLatitudeE6() / 1000000);
+                location.setLongitude((double) p.getLongitudeE6() / 1000000);
+                if(arg1.getAction() ==  MotionEvent.ACTION_UP)
+                {
+                    Log.i("Touch", "" + location);
+                    return true;
+                } else
+                {
+                    return true;
+                }
+            }
+        });
+    }
+
+    public void setupSubmitButton(final IMapController mapController) {
         double startLat = startLocation.getLatitude();
         double startLon = startLocation.getLongitude();
 
-        TextView currentLocation = (TextView) findViewById((R.id.currentLocationTV));
-        currentLocation.setText(startLat + ", " + startLon);
+        final EditText editTextLat = (EditText) findViewById((R.id.editTextLat));
+        final EditText editTextLon = (EditText) findViewById((R.id.editTextLon));
+        editTextLat.setText(String.valueOf(startLat));
+        editTextLon.setText(String.valueOf(startLon));
+
+        lastLat = String.valueOf(startLat);
+        lastLon = String.valueOf(startLon);
+
+        ToggleButton locationToggle = (ToggleButton) findViewById(R.id.toggleDVL);
+        locationToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+                if (isChecked) {
+                    // The toggle is enabled
+                    editTextLat.setEnabled(false);
+                    editTextLon.setEnabled(false);
+                    if (lc.getCurrentLocation() != null) {
+                        editTextLat.setText(String.valueOf(lc.getCurrentLocation().getLatitude()));
+                        editTextLon.setText(String.valueOf(lc.getCurrentLocation().getLongitude()));
+                        mapController.setCenter(lc.getCurrentLocation());
+
+                        fab.setVisibility(TextView.VISIBLE);
+                    } else {
+                        editTextLat.setText(String.valueOf(53.3498));
+                        editTextLon.setText(String.valueOf(-6.2603));
+                    }
+                } else {
+                    // The toggle is disabled
+                    editTextLat.setEnabled(true);
+                    editTextLon.setEnabled(true);
+
+                    fab.setVisibility(TextView.GONE);
+                }
+            }
+        });
 
         final EditText routeLengthET = (EditText) findViewById(R.id.routeLengthET);
         routeLengthET.addTextChangedListener(new TextWatcher() {
@@ -133,26 +224,39 @@ public class MainActivity extends AppCompatActivity {
         final Button generateRouteButton = findViewById(R.id.generateRouteButton);
         generateRouteButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+
+                String latStart = editTextLat.getText().toString();
+                String lonStart = editTextLon.getText().toString();
+                String routeLength = routeLengthET.getText().toString();
+
+                startLocation = new GeoPoint(Double.parseDouble(latStart), Double.parseDouble(lonStart));
+
+                mapController.setCenter(startLocation);
+
                 // Code here executes on main thread after user presses button
                 BoundingBox bb = map.getProjection().getBoundingBox();
                 System.out.println("Bounding Box: " + bb);
 
-                String routeLength = routeLengthET.getText().toString();
-
-                if (routeLength.equals("") || Double.parseDouble(routeLength) <= 1.99) {
-                    Toast.makeText(MainActivity.this, "Distance must be at least 2km", Toast.LENGTH_SHORT).show();
-                } else if (Double.parseDouble(routeLength) >= 8.01) {
-                    Toast.makeText(MainActivity.this, "Distance must be less than 8km", Toast.LENGTH_SHORT).show();
+                if (latStart.equals("") || Double.parseDouble(latStart) <= 53.2295 || Double.parseDouble(latStart) >= 53.4788) {
+                    Toast.makeText(MainActivity.this, "Latitude must be between 53.2295 and 53.4766", Toast.LENGTH_SHORT).show();
+                } else  if (lonStart.equals("") || Double.parseDouble(lonStart) <= -6.6900 || Double.parseDouble(lonStart) >= -5.9924) {
+                    Toast.makeText(MainActivity.this, "Longitude must be between -6.6900 and -5.9924", Toast.LENGTH_SHORT).show();
                 } else {
-                        String reqDistance =  "reqDistance=" + routeLength;
-                        String sourceLat = "sourceLat=" + String.valueOf(startLocation.getLatitude());
-                        String sourceLon =  "sourceLon=" + String.valueOf(startLocation.getLongitude());
+                    if (routeLength.equals("") || Double.parseDouble(routeLength) <= 1.99) {
+                        Toast.makeText(MainActivity.this, "Distance must be at least 2km", Toast.LENGTH_SHORT).show();
+                    } else if (Double.parseDouble(routeLength) >= 8.01) {
+                        Toast.makeText(MainActivity.this, "Distance must be less than 8km", Toast.LENGTH_SHORT).show();
+                    } else {
+                        String reqDistance = "reqDistance=" + routeLength;
+                        String sourceLat = "sourceLat=" + latStart;
+                        String sourceLon = "sourceLon=" + lonStart;
                         String x1 = "x1=" + bb.getLatSouth();
                         String y1 = "y1=" + bb.getLonWest();
                         String x2 = "x2=" + bb.getLatNorth();
                         String y2 = "y2=" + bb.getLonEast();
 
                         new HttpGraphRequestTask().execute(routeChoice, reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
+                    }
                 }
             }
         });
@@ -251,7 +355,7 @@ public class MainActivity extends AppCompatActivity {
         double routeLength = route.getWeight();
         Intent mapIntent = new Intent(this, MapActivity.class);
         Bundle extras = new Bundle();
-        extras.putSerializable("sourceLocation", lc.getCurrentLocation());
+        extras.putSerializable("sourceLocation", startLocation);
         extras.putSerializable("edges", edges);
         extras.putDouble("routeLength", routeLength);
         extras.putSerializable("dublin", dublin);
@@ -339,6 +443,7 @@ public class MainActivity extends AppCompatActivity {
                 progressDialog.dismiss();
                 launchMapActivity(route);
             } else {
+                progressDialog.dismiss();
                 Toast.makeText(MainActivity.this, "Unable to Generate Route. Please try with different parameters", Toast.LENGTH_LONG).show();
             }
         }

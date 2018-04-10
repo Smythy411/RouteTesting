@@ -8,9 +8,11 @@
 
     <org.osmdroid.views.MapView
         android:id="@+id/map"
+        tilesource="Mapnik"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tilesource="Mapnik" >
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true">
 
     </org.osmdroid.views.MapView>
 
@@ -26,10 +28,10 @@
     <android.support.constraint.ConstraintLayout
         android:id="@+id/generateRouteUI"
         android:layout_width="250dp"
-        android:layout_height="245dp"
+        android:layout_height="275dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="111dp"
+        android:layout_marginTop="109dp"
         android:background="#77000000">
 
         <Button
@@ -47,19 +49,21 @@
 
         <EditText
             android:id="@+id/routeLengthET"
-            android:layout_width="49dp"
+            android:layout_width="57dp"
             android:layout_height="46dp"
-            android:layout_marginBottom="60dp"
+            android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
+            android:digits="0,1,2,3,4,5,6,7,8,9,."
             android:ems="10"
             android:hint="2~8k"
             android:inputType="number"
             android:textAlignment="center"
             android:textColor="@android:color/white"
-            app:layout_constraintBottom_toTopOf="@+id/generateRouteButton"
+            android:imeOptions="actionDone"
+            app:layout_constraintBottom_toTopOf="@+id/radioGroup2"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.597"
+            app:layout_constraintHorizontal_bias="0.56"
             app:layout_constraintStart_toEndOf="@+id/routeLengthTV" />
 
         <TextView
@@ -67,7 +71,7 @@
             android:layout_width="87dp"
             android:layout_height="22dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="36dp"
+            android:layout_marginTop="76dp"
             android:text="Route Length:"
             android:textColor="@android:color/white"
             app:layout_constraintStart_toStartOf="parent"
@@ -85,24 +89,51 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/currentLocationTV"
+        <EditText
+            android:id="@+id/editTextLat"
             android:layout_width="116dp"
-            android:layout_height="37dp"
+            android:layout_height="32dp"
             android:layout_marginEnd="16dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="24dp"
-            android:text="Grabbing Location..."
+            android:layout_marginTop="8dp"
+            android:inputType="numberDecimal"
+            android:text="53.3498"
             android:textAlignment="center"
             android:textColor="@android:color/white"
+            android:textSize="10sp"
+            android:imeOptions="actionDone"
+            android:digits="0,1,2,3,4,5,6,7,8,9,."
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toEndOf="@+id/userLocationTV"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <EditText
+            android:id="@+id/editTextLon"
+            android:layout_width="116dp"
+            android:layout_height="31dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            android:inputType="numberDecimal"
+            android:text="-6.2603"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="10sp"
+            android:digits="0,1,2,3,4,5,6,7,8,9,.,-"
+            android:imeOptions="actionDone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/userLocationTV"
+            app:layout_constraintTop_toBottomOf="@+id/editTextLat" />
+
         <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/radioGroup2"
             android:layout_width="fill_parent"
             android:layout_height="31dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
             android:orientation="horizontal"
             app:layout_constraintBottom_toTopOf="@+id/generateRouteButton"
             app:layout_constraintEnd_toEndOf="parent"
@@ -120,10 +151,56 @@
                 android:id="@+id/radio_optimal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="onRadioButtonClicked"
                 android:checked="true"
+                android:onClick="onRadioButtonClicked"
                 android:text="Optimal Route" />
         </RadioGroup>
+
+        <ToggleButton
+            android:id="@+id/toggleDVL"
+            android:layout_width="93dp"
+            android:layout_height="36dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="28dp"
+            android:layout_marginTop="4dp"
+            android:checked="true"
+            android:text="ToggleButton"
+            android:textOff="No"
+            android:textOn="Yes"
+            app:layout_constraintBottom_toTopOf="@+id/routeLengthET"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/editTextLon"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <TextView
+            android:id="@+id/udlTV"
+            android:layout_width="83dp"
+            android:layout_height="37dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Use Device Location?"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            app:layout_constraintBottom_toTopOf="@+id/routeLengthTV"
+            app:layout_constraintEnd_toStartOf="@+id/toggleDVL"
+            app:layout_constraintHorizontal_bias="0.266"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/userLocationTV"
+            app:layout_constraintVertical_bias="0.913" />
     </android.support.constraint.ConstraintLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@drawable/center"
+        app:backgroundTint="#dedddd"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </RelativeLayout>
