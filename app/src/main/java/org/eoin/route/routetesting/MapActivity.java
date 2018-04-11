@@ -67,7 +67,7 @@ public class MapActivity extends AppCompatActivity {
         map.setMinZoomLevel(13.0);
 
         //Enables zoom
-        map.setBuiltInZoomControls(true);
+        map.setBuiltInZoomControls(false);
         map.setMultiTouchControls(true);
 
         this.lc = new LocationController(this, ctx, map, source, false);
@@ -138,7 +138,13 @@ public class MapActivity extends AppCompatActivity {
             waypoints.add(new GeoPoint(Double.parseDouble(target.getLat()),
                     Double.parseDouble(target.getLon())));
         }
-
+/*
+        if (waypoints.get(waypoints.size() - 1).getLatitude() != Double.parseDouble(source.getLat()) &&
+                waypoints.get(waypoints.size() - 1).getLongitude() != Double.parseDouble(source.getLon())){
+            waypoints.add(new GeoPoint(Double.parseDouble(source.getLat()),
+                    Double.parseDouble(source.getLon())));
+        }
+*/
         BoundingBox bb = map.getBoundingBox();
         System.out.println(bb);
 
@@ -151,7 +157,11 @@ public class MapActivity extends AppCompatActivity {
 
         map.invalidate();
 
-        new UpdateRoadTask().execute(waypoints);
+        Polyline route = new Polyline();
+        route.setPoints(waypoints);
+        map.getOverlayManager().add(route);
+
+        //new UpdateRoadTask().execute(waypoints);
     }
 
     private class UpdateRoadTask extends AsyncTask<Object, Void, Road> {

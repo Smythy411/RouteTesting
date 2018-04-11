@@ -50,14 +50,16 @@
         android:id="@+id/chronometer"
         android:layout_width="124dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
         android:layout_weight="0"
-        android:paddingBottom="30dip"
-        android:paddingTop="30dip"
+        android:background="#77000000"
+        android:paddingBottom="5dip"
+        android:paddingTop="5dp"
         android:textAlignment="center"
         android:textColor="@android:color/holo_purple"
         android:textSize="30sp"
         android:textStyle="bold"
-        app:layout_anchor="@+id/map"
-        app:layout_anchorGravity="top|center" />
+        app:layout_anchor="@+id/include"
+        app:layout_anchorGravity="top|bottom|center" />
 
 </android.support.design.widget.CoordinatorLayout>

@@ -114,6 +114,11 @@ public class OSMEdge implements Serializable{
         }//End if else
     }//End getNeighbour
 
+    public OSMNode[] getBothNodes() {
+        OSMNode[]  nodes = {this.sourceNode, this.targetNode};
+        return nodes;
+    }
+
     public void setVisited() {
         this.visited = true;
     }//End setVisited()
