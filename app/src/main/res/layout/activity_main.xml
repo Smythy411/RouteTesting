@@ -56,7 +56,7 @@
             android:layout_marginStart="8dp"
             android:digits="0,1,2,3,4,5,6,7,8,9,."
             android:ems="10"
-            android:hint="2~8k"
+            android:hint="2~12k"
             android:imeOptions="actionDone"
             android:inputType="number"
             android:textAlignment="center"

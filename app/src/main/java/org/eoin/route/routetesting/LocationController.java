@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -51,7 +52,7 @@ public class LocationController implements LocationListener {
         this.context = ctx;
         this.mMapView = m;
         this.currentLocation = cl;
-        this.followme = false;
+        this.followme = fm;
         mgr = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         setCurrentLocation();
     }
@@ -70,8 +71,8 @@ public class LocationController implements LocationListener {
         try {
             Location gpsLocation = null;
             Location networkLocation = null;
-            mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this);
-            mgr.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,  0L, 0, this);
+            mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+            mgr.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,  0, 0, this);
             gpsLocation = mgr.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             networkLocation = mgr.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
@@ -91,17 +92,11 @@ public class LocationController implements LocationListener {
         System.out.println(location1 + " / " + location2);
         if (location1 == null && location2 == null) {
             return null;
-        }
-
-        if (location1 != null && location2 == null) {
+        } else if (location1 != null && location2 == null) {
             return location1;
-        }
-
-        if (location1 == null && location2 != null) {
+        } else if (location1 == null && location2 != null) {
             return location2;
-        }
-
-        if (location1.getAccuracy() < location2.getAccuracy()) {
+        } else if (location1.getAccuracy() < location2.getAccuracy()) {
             return location1;
         } else {
             return location2;
@@ -164,23 +159,25 @@ public class LocationController implements LocationListener {
             ex.printStackTrace();
         }
 
+        Log.i("Location Loop", "looping");
         if (!gpsEnabled && !networkEnabled) {
-            final AlertDialog.Builder enableLocation = new AlertDialog.Builder(activity);
+            final AlertDialog.Builder turnOnLocation = new AlertDialog.Builder(activity);
             //final AlertDialog el = enableLocation.create();
-            enableLocation.setTitle("This application requires your location.");
-            enableLocation.setMessage("Would you like to enable your location?");
-            enableLocation.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            turnOnLocation.setTitle("This application requires your location.");
+            turnOnLocation.setMessage("Would you like to enable your location?");
+            turnOnLocation.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                     Intent settings = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                     activity.startActivity(settings);
+                    dialog.dismiss();
                 }//End onClick
             });// End Positive Button
-            enableLocation.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            turnOnLocation.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                     dialog.cancel();
                 }//End onClick
             });//End Negative Button
-            enableLocation.show();
+            turnOnLocation.show();
         }//End if
     }//End checkLocationOn()
 
@@ -216,6 +213,11 @@ public class LocationController implements LocationListener {
             if (grabbingLocation.getVisibility() == TextView.VISIBLE) {
                 grabbingLocation.setText("Location Found!");
                 grabbingLocation.setVisibility(TextView.GONE);
+            }
+
+            FloatingActionButton fab = (FloatingActionButton) activity.findViewById(R.id.fab);
+            if (fab.getVisibility() == TextView.GONE) {
+                grabbingLocation.setVisibility(TextView.VISIBLE);
             }
 
             ToggleButton locationToggle = (ToggleButton) activity.findViewById(R.id.toggleDVL);

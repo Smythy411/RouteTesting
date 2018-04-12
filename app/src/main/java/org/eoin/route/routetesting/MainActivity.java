@@ -128,6 +128,9 @@ public class MainActivity extends AppCompatActivity {
             //startLocation = new GeoPoint(new GeoPoint(53.3498, -6.2603));
             mapController.setZoom(13.0);
 
+            ToggleButton locationToggle = (ToggleButton) findViewById(R.id.toggleDVL);
+            locationToggle.setChecked(false);
+
             fab.setVisibility(TextView.GONE);
 
             map.zoomToBoundingBox(dublin, true, 5);
@@ -225,9 +228,13 @@ public class MainActivity extends AppCompatActivity {
                 if (routeLength.equals("")) {
                     Toast.makeText(MainActivity.this, "Distance must be at least 2km", Toast.LENGTH_SHORT).show();
                 } else {
-                    if (Double.parseDouble(routeLength) > 5.0) {
+                    if (Double.parseDouble(routeLength) > 8.5 && Double.parseDouble(routeLength) < 12.01) {
+                        mapController.setZoom(15.0);
+                        Toast.makeText(MainActivity.this, "Routes of this length may take a long time to generate", Toast.LENGTH_SHORT).show();
+                    }
+                    if (Double.parseDouble(routeLength) > 5.0 && Double.parseDouble(routeLength) <= 8.5) {
                         mapController.setZoom(15.5);
-                        Toast.makeText(MainActivity.this, "Routes of this length may take a long time to generate", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Routes of this length may take a long time to generate", Toast.LENGTH_SHORT).show();
                     }
                     if (Double.parseDouble(routeLength) <= 5.0) {
                         mapController.setZoom(16.0);
@@ -259,8 +266,8 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     if (routeLength.equals("") || Double.parseDouble(routeLength) <= 1.99) {
                         Toast.makeText(MainActivity.this, "Distance must be at least 2km", Toast.LENGTH_SHORT).show();
-                    } else if (Double.parseDouble(routeLength) >= 8.01) {
-                        Toast.makeText(MainActivity.this, "Distance must be less than 8km", Toast.LENGTH_SHORT).show();
+                    } else if (Double.parseDouble(routeLength) >= 12.01) {
+                        Toast.makeText(MainActivity.this, "Distance must be less than 12km", Toast.LENGTH_SHORT).show();
                     } else {
                         String reqDistance = "reqDistance=" + routeLength;
                         String sourceLat = "sourceLat=" + latStart;
@@ -440,6 +447,7 @@ public class MainActivity extends AppCompatActivity {
             if (route != null) {
                 progressDialog.setProgress(100);
                 progressDialog.dismiss();
+                progressDialog.cancel();
                 launchMapActivity(route);
             } else {
                 progressDialog.dismiss();
@@ -450,7 +458,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onResume(){
         super.onResume();
-        lc.setCurrentLocation();
+        //lc.setCurrentLocation();
         //this will refresh the osmdroid configuration on resuming.
         //if you make changes to the configuration, use
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
