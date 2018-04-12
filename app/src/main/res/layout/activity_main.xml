@@ -28,7 +28,7 @@
     <android.support.constraint.ConstraintLayout
         android:id="@+id/generateRouteUI"
         android:layout_width="250dp"
-        android:layout_height="275dp"
+        android:layout_height="308dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="109dp"
@@ -50,32 +50,33 @@
         <EditText
             android:id="@+id/routeLengthET"
             android:layout_width="57dp"
-            android:layout_height="46dp"
+            android:layout_height="36dp"
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:digits="0,1,2,3,4,5,6,7,8,9,."
             android:ems="10"
             android:hint="2~8k"
+            android:imeOptions="actionDone"
             android:inputType="number"
             android:textAlignment="center"
             android:textColor="@android:color/white"
-            android:imeOptions="actionDone"
+            android:textSize="14sp"
             app:layout_constraintBottom_toTopOf="@+id/radioGroup2"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.56"
+            app:layout_constraintHorizontal_bias="0.513"
             app:layout_constraintStart_toEndOf="@+id/routeLengthTV" />
 
         <TextView
             android:id="@+id/routeLengthTV"
             android:layout_width="87dp"
             android:layout_height="22dp"
+            android:layout_marginBottom="8dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="76dp"
             android:text="Route Length:"
             android:textColor="@android:color/white"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/userLocationTV" />
+            app:layout_constraintBottom_toTopOf="@+id/radioGroup2"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/userLocationTV"
@@ -96,13 +97,13 @@
             android:layout_marginEnd="16dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
+            android:digits="0,1,2,3,4,5,6,7,8,9,."
+            android:imeOptions="actionDone"
             android:inputType="numberDecimal"
             android:text="53.3498"
             android:textAlignment="center"
             android:textColor="@android:color/white"
             android:textSize="10sp"
-            android:imeOptions="actionDone"
-            android:digits="0,1,2,3,4,5,6,7,8,9,."
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toEndOf="@+id/userLocationTV"
@@ -115,13 +116,13 @@
             android:layout_marginEnd="16dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="4dp"
+            android:digits="0,1,2,3,4,5,6,7,8,9,.,-"
+            android:imeOptions="actionDone"
             android:inputType="numberDecimal"
             android:text="-6.2603"
             android:textAlignment="center"
             android:textColor="@android:color/white"
             android:textSize="10sp"
-            android:digits="0,1,2,3,4,5,6,7,8,9,.,-"
-            android:imeOptions="actionDone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toEndOf="@+id/userLocationTV"
@@ -164,7 +165,7 @@
             android:layout_marginEnd="28dp"
             android:layout_marginTop="4dp"
             android:checked="true"
-            android:text="ToggleButton"
+            android:text="Device Location"
             android:textOff="No"
             android:textOn="Yes"
             app:layout_constraintBottom_toTopOf="@+id/routeLengthET"
@@ -188,7 +189,37 @@
             app:layout_constraintHorizontal_bias="0.266"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/userLocationTV"
-            app:layout_constraintVertical_bias="0.913" />
+            app:layout_constraintVertical_bias="0.157" />
+
+        <TextView
+            android:id="@+id/ResidentialTV"
+            android:layout_width="78dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="16dp"
+            android:text="Include Residential Roads?"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            app:layout_constraintBottom_toTopOf="@+id/routeLengthTV"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/udlTV"
+            app:layout_constraintVertical_bias="1.0" />
+
+        <ToggleButton
+            android:id="@+id/toggleResidential"
+            android:layout_width="93dp"
+            android:layout_height="36dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="28dp"
+            android:layout_marginTop="8dp"
+            android:checked="true"
+            android:text="Residential Tags"
+            android:textOff="No"
+            android:textOn="Yes"
+            app:layout_constraintBottom_toTopOf="@+id/routeLengthET"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toggleDVL"
+            app:layout_constraintVertical_bias="1.0" />
     </android.support.constraint.ConstraintLayout>
 
     <android.support.design.widget.FloatingActionButton

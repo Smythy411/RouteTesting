@@ -62,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
 
     String routeChoice = "GetBestGraph";
 
+    boolean includeResidentialTags = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -172,6 +174,7 @@ public class MainActivity extends AppCompatActivity {
                 FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
                 if (isChecked) {
                     // The toggle is enabled
+                    fab.setVisibility(TextView.VISIBLE);
                     editTextLat.setEnabled(false);
                     editTextLon.setEnabled(false);
                     if (lc.getCurrentLocation() != null) {
@@ -179,7 +182,6 @@ public class MainActivity extends AppCompatActivity {
                         editTextLon.setText(String.valueOf(lc.getCurrentLocation().getLongitude()));
                         mapController.setCenter(lc.getCurrentLocation());
 
-                        fab.setVisibility(TextView.VISIBLE);
                     } else {
                         editTextLat.setText(String.valueOf(53.3498));
                         editTextLon.setText(String.valueOf(-6.2603));
@@ -190,6 +192,19 @@ public class MainActivity extends AppCompatActivity {
                     editTextLon.setEnabled(true);
 
                     fab.setVisibility(TextView.GONE);
+                }
+            }
+        });
+
+        ToggleButton residentialToggle = (ToggleButton) findViewById(R.id.toggleResidential);
+        residentialToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // The toggle is enabled
+                    includeResidentialTags = true;
+                } else {
+                    // The toggle is disabled
+                    includeResidentialTags = false;
                 }
             }
         });
@@ -254,8 +269,9 @@ public class MainActivity extends AppCompatActivity {
                         String y1 = "y1=" + bb.getLonWest();
                         String x2 = "x2=" + bb.getLatNorth();
                         String y2 = "y2=" + bb.getLonEast();
+                        String includeResidential = "includeResidential=" + includeResidentialTags;
 
-                        new HttpGraphRequestTask().execute(routeChoice, reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
+                        new HttpGraphRequestTask().execute(routeChoice, reqDistance, sourceLat, sourceLon, x1, y1, x2, y2, includeResidential);
                     }
                 }
             }
@@ -296,47 +312,29 @@ public class MainActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_refresh) {
-            map.getOverlays().clear();
-            map.invalidate();
-            new HttpGraphRequestTask().execute("GetGraph");
-            return true;
-        }
         if (id == R.id.action_simpleLoop) {
             map.getOverlays().clear();
             map.invalidate();
 
-            GeoPoint source = lc.getCurrentLocation();
-            double latitude = source.getLatitude();
-            double longitude = source.getLongitude();
             BoundingBox bb = map.getProjection().getBoundingBox();
             System.out.println("Bounding Box: " + bb);
 
-            String sourceLat = "sourceLat=" + String.valueOf(latitude);
-            String sourceLon =  "sourceLon=" + String.valueOf(longitude);
-            String reqDistance =  "reqDistance=" + "3";
+            final EditText editTextLat = (EditText) findViewById((R.id.editTextLat));
+            final EditText editTextLon = (EditText) findViewById((R.id.editTextLon));
+
+            String latStart = editTextLat.getText().toString();
+            String lonStart = editTextLon.getText().toString();
+
+            final EditText routeLengthET = (EditText) findViewById(R.id.routeLengthET);
+            String sourceLat = "sourceLat=" + latStart;
+            String sourceLon =  "sourceLon=" + lonStart;
+            String reqDistance =  "reqDistance=" + routeLengthET.getText().toString();
             String x1 = "x1=" + bb.getLatSouth();
             String y1 = "y1=" + bb.getLonWest();
             String x2 = "x2=" + bb.getLatNorth();
             String y2 = "y2=" + bb.getLonEast();
 
-            new HttpGraphRequestTask().execute("GetBestGraph", reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
-            return true;
-        }
-        if (id == R.id.action_refreshLocation) {
-            lc.setCurrentLocation();
-            IMapController mapController = map.getController();
-            if (lc.getCurrentLocation() != null) {
-                Log.i("Refresh", "succeeded");
-                startLocation = new GeoPoint(lc.getCurrentLocation());
-                mapController.setCenter(startLocation);
-                mapController.setZoom(17.0);
-            } else {
-                Log.i("Refresh", "failed");
-                map.setBuiltInZoomControls(true);
-                map.setMultiTouchControls(true);
-            }
-            System.out.println(startLocation);
+            new HttpGraphRequestTask().execute("GetSimpleGraph", reqDistance, sourceLat, sourceLon, x1, y1, x2, y2);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -440,11 +438,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Route route) {
             if (route != null) {
+                progressDialog.setProgress(100);
                 progressDialog.dismiss();
                 launchMapActivity(route);
             } else {
                 progressDialog.dismiss();
-                Toast.makeText(MainActivity.this, "Unable to Generate Route. Please try with different parameters", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "Unable to Generate Route. Please try again with different parameters", Toast.LENGTH_LONG).show();
             }
         }
     }

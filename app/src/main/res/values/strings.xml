@@ -2,7 +2,7 @@
     <string name="app_name">RouteTesting</string>
 
     <string name="action_refresh">Refresh</string>
-    <string name="action_simpleLoop">Simple Loop</string>
+    <string name="action_simpleLoop">Approach 2 *LEGACY*</string>
     <string name="action_refreshLocation">Refresh Location</string>
 
     <string name="node_label">The nodeID is</string>
