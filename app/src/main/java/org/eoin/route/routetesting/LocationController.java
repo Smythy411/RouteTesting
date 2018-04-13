@@ -21,6 +21,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.testfairy.TestFairy;
+
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -73,6 +75,7 @@ public class LocationController implements LocationListener {
             Location networkLocation = null;
             mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
             mgr.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,  0, 0, this);
+
             gpsLocation = mgr.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             networkLocation = mgr.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
@@ -159,7 +162,6 @@ public class LocationController implements LocationListener {
             ex.printStackTrace();
         }
 
-        Log.i("Location Loop", "looping");
         if (!gpsEnabled && !networkEnabled) {
             final AlertDialog.Builder turnOnLocation = new AlertDialog.Builder(activity);
             //final AlertDialog el = enableLocation.create();
@@ -206,6 +208,7 @@ public class LocationController implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
+        TestFairy.updateLocation(location);
         currentLocation = new GeoPoint(location);
         Log.i("Activity: ", activity.getLocalClassName());
         if (activity.getLocalClassName().equals("MainActivity")) {

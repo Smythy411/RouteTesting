@@ -90,6 +90,14 @@ public class MapActivity extends AppCompatActivity {
             }
         });
 
+        final FloatingActionButton backButton = (FloatingActionButton) findViewById(R.id.backButton);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+
         mChrono = (Chronometer) findViewById(R.id.chronometer);
 
         final Button toggleRunButton = findViewById(R.id.toggle_run);
@@ -100,6 +108,8 @@ public class MapActivity extends AppCompatActivity {
                     lc.setFollow(true);
                     toggleRunButton.setText("Stop Run");
 
+                    backButton.setVisibility(TextView.GONE);
+
                     mChrono.setBase(SystemClock.elapsedRealtime());
                     timeWhenStopped = 0;
                     mChrono.start();
@@ -107,6 +117,8 @@ public class MapActivity extends AppCompatActivity {
                     mapController.setZoom(16.0);
                     lc.setFollow(false);
                     toggleRunButton.setText("Start Run");
+
+                    backButton.setVisibility(TextView.VISIBLE);
 
                     timeWhenStopped = mChrono.getBase() - SystemClock.elapsedRealtime();
 
